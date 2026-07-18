@@ -130,33 +130,49 @@
                     const items = await listResp.json();
                     if (Array.isArray(items)) {
                         oldDirs = items.filter(i => i.type === 'dir');
+                        showStatus('找到 ' + oldDirs.length + ' 个旧链接，正在删除...', 'loading');
+                    } else {
+                        showStatus('返回格式异常: ' + JSON.stringify(items).substring(0,100), 'error');
+                        setBtn(false); return;
                     }
+                } else {
+                    const errText = await listResp.text();
+                    showStatus('获取链接列表失败: HTTP ' + listResp.status + ' ' + errText.substring(0,100), 'error');
+                    setBtn(false); return;
                 }
 
-                // 2. 获取每个旧文件夹里 index.html 的 SHA，准备删除
+                // 2. 获取每个旧文件夹里 index.html 的 SHA
                 let deleteQueue = [];
                 for (const dir of oldDirs) {
-                    try {
-                        const fileResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + dir.name + '/index.html', {
-                            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+                    const fileResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + dir.name + '/index.html', {
+                        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+                    });
+                    if (fileResp.ok) {
+                        const fileData = await fileResp.json();
+                        deleteQueue.push({
+                            path: 'links/' + dir.name + '/index.html',
+                            sha: fileData.sha,
+                            name: dir.name
                         });
-                        if (fileResp.ok) {
-                            const fileData = await fileResp.json();
-                            deleteQueue.push({
-                                path: 'links/' + dir.name + '/index.html',
-                                sha: fileData.sha
-                            });
-                        }
-                    } catch(e) {}
+                    } else {
+                        showStatus('获取 ' + dir.name + ' 文件信息失败: HTTP ' + fileResp.status, 'error');
+                        setBtn(false); return;
+                    }
                 }
 
                 // 3. 逐个删除旧链接
                 for (const item of deleteQueue) {
-                    await fetch('https://api.github.com/repos/' + REPO + '/contents/' + item.path, {
+                    showStatus('正在删除旧链接: ' + item.name + '...', 'loading');
+                    const delResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + item.path, {
                         method: 'DELETE',
                         headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-                        body: JSON.stringify({ message: 'expire link ' + item.path.replace('links/','').replace('/index.html',''), sha: item.sha, branch: BRANCH })
+                        body: JSON.stringify({ message: 'expire ' + item.name, sha: item.sha, branch: BRANCH })
                     });
+                    if (!delResp.ok) {
+                        const errText = await delResp.text();
+                        showStatus('删除 ' + item.name + ' 失败: HTTP ' + delResp.status + ' ' + errText.substring(0,100), 'error');
+                        setBtn(false); return;
+                    }
                 }
 
                 // 4. 创建新链接
