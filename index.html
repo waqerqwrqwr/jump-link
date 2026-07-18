@@ -5,46 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>正在跳转...</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            min-height:100vh; display:flex;
-            justify-content:center; align-items:center;
-            background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
-            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#fff;
-        }
-        .box { text-align:center; padding:40px; }
-        .spinner { width:48px; height:48px; border:3px solid rgba(255,255,255,0.1); border-top-color:#4facfe; border-radius:50%; animation:s .8s linear infinite; margin:0 auto 24px; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#fff}
+        .box{text-align:center;padding:40px}
+        .spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:#4facfe;border-radius:50%;animation:s .8s linear infinite;margin:0 auto 24px}
         @keyframes s{to{transform:rotate(360deg)}}
-        h1{font-size:22px;font-weight:500;margin-bottom:8px;}
-        p{color:rgba(255,255,255,0.5);font-size:14px;}
-        .expired{display:none}.expired h1{opacity:.5}.expired p{color:rgba(255,255,255,0.25)}
-        .alink{position:fixed;bottom:20px;right:20px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.2);border:none;padding:6px 12px;border-radius:4px;font-size:12px;text-decoration:none;}
+        h1{font-size:22px;font-weight:500;margin-bottom:8px}
+        p{color:rgba(255,255,255,0.5);font-size:14px}
+        .link{margin-top:24px;color:#4facfe;text-decoration:none;font-size:15px;display:inline-block}
+        .tip{margin-top:32px;padding:10px 20px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:13px;color:rgba(255,255,255,0.35)}
+        .alink{position:fixed;bottom:20px;right:20px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.2);border:none;padding:6px 12px;border-radius:4px;font-size:12px;text-decoration:none}
     </style>
 </head>
 <body>
-    <div class="box" id="loading"><div class="spinner"></div><h1>正在验证链接...</h1></div>
-    <div class="box expired" id="expired"><h1>🔗 此链接已过期</h1><p>请向发布者索取最新链接</p></div>
-    <div class="box" id="redirect" style="display:none"><div class="spinner"></div><h1>正在跳转...</h1></div>
+    <div class="box">
+        <div class="spinner"></div>
+        <h1>正在跳转...</h1>
+        <p>如未自动跳转请点击下方链接</p>
+        <a class="link" id="targetLink" href="#">点击前往 →</a>
+        <div class="tip">💡 请在 Safari 浏览器中打开</div>
+    </div>
     <a class="alink" href="admin.html">⚙</a>
     <script src="config.js"></script>
     <script>
-        const MY_ID = 'main';
-        const CFG = 'https://api.github.com/repos/waqerqwrqwr/jump-link/contents/current.txt';
-        fetch(CFG + '?t=' + Date.now(), {headers:{'Accept':'application/vnd.github.v3+json'}}).then(r=>r.json()).then(d => {
-            const id = atob(d.content.replace(/\n/g,'')).trim();
-            if (id === MY_ID) {
-                document.getElementById('loading').style.display='none';
-                document.getElementById('redirect').style.display='';
-                setTimeout(()=>{ window.location.href = TARGET_URL; }, 300);
-            } else {
-                document.getElementById('loading').style.display='none';
-                document.getElementById('expired').style.display='';
-            }
-        }).catch(()=>{
-            document.getElementById('loading').style.display='none';
-            document.getElementById('redirect').style.display='';
-            setTimeout(()=>{ window.location.href = TARGET_URL; }, 300);
-        });
+        document.getElementById('targetLink').href = TARGET_URL;
+        window.location.href = TARGET_URL;
     </script>
 </body>
 </html>
