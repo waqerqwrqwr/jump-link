@@ -29,9 +29,10 @@
     <script src="config.js"></script>
     <script>
         const MY_ID = 'main';
-        const CFG = 'https://raw.githubusercontent.com/waqerqwrqwr/jump-link/master/current.txt';
-        fetch(CFG + '?t=' + Date.now()).then(r=>r.text()).then(id => {
-            if (id.trim() === MY_ID) {
+        const CFG = 'https://api.github.com/repos/waqerqwrqwr/jump-link/contents/current.txt';
+        fetch(CFG + '?t=' + Date.now(), {headers:{'Accept':'application/vnd.github.v3+json'}}).then(r=>r.json()).then(d => {
+            const id = atob(d.content.replace(/\n/g,'')).trim();
+            if (id === MY_ID) {
                 document.getElementById('loading').style.display='none';
                 document.getElementById('redirect').style.display='';
                 setTimeout(()=>{ window.location.href = TARGET_URL; }, 300);
