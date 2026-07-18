@@ -17,15 +17,10 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         h1 { font-size: 24px; margin-bottom: 8px; }
-        h2 { font-size: 18px; margin-bottom: 16px; color: #333; }
         .desc { color: #666; font-size: 14px; margin-bottom: 24px; }
         label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #333; }
-        input, textarea {
-            width: 100%; padding: 10px 14px; border: 1px solid #d9d9d9;
-            border-radius: 8px; font-size: 14px; outline: none; transition: border .2s; margin-bottom: 16px;
-        }
-        input:focus, textarea:focus { border-color: #4facfe; }
-        textarea { min-height: 60px; resize: vertical; }
+        input { width: 100%; padding: 10px 14px; border: 1px solid #d9d9d9; border-radius: 8px; font-size: 14px; outline: none; transition: border .2s; margin-bottom: 16px; box-sizing: border-box; }
+        input:focus { border-color: #4facfe; }
         .btn {
             width: 100%; padding: 12px; border: none; border-radius: 8px;
             font-size: 15px; cursor: pointer; color: #fff; font-weight: 500;
@@ -34,7 +29,7 @@
         .btn:hover { opacity: .85; }
         .btn:disabled { opacity: .5; cursor: not-allowed; }
         .btn-primary { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-        .btn-success { background: linear-gradient(135deg, #52c41a, #73d13d); }
+        .btn-danger { background: linear-gradient(135deg, #ff4d4f, #ff7a45); }
         .status {
             margin-top: 12px; padding: 10px 14px; border-radius: 8px;
             font-size: 13px; display: none;
@@ -42,55 +37,51 @@
         .status.success { display: block; background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
         .status.error { display: block; background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; }
         .status.loading { display: block; background: #e6f7ff; border: 1px solid #91d5ff; color: #1890ff; }
-        .link-list { margin-top: 16px; }
-        .link-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 16px; background: #fafafa; border-radius: 8px; margin-bottom: 8px;
-            border: 1px solid #f0f0f0;
+        .link-box {
+            margin-top: 20px; padding: 16px; background: #f6ffed; border: 1px solid #b7eb8f;
+            border-radius: 8px; display: none;
         }
-        .link-url { font-size: 13px; color: #4facfe; word-break: break-all; flex: 1; }
-        .link-date { font-size: 12px; color: #999; margin-left: 12px; white-space: nowrap; }
-        .copy-btn {
-            padding: 4px 12px; border: 1px solid #d9d9d9; border-radius: 4px;
-            background: #fff; cursor: pointer; font-size: 12px; color: #333; margin-left: 8px;
-            transition: all .2s;
+        .link-box .label { font-size: 13px; color: #666; margin-bottom: 8px; }
+        .link-box .url {
+            font-size: 16px; color: #4facfe; word-break: break-all;
+            padding: 8px 12px; background: #fff; border-radius: 6px; border: 1px solid #e8e8e8;
+            cursor: pointer; font-family: monospace;
         }
-        .copy-btn:hover { border-color: #4facfe; color: #4facfe; }
+        .link-box .url:hover { background: #fafafa; }
+        .token-hint { font-size: 12px; color: #999; margin-top: -12px; margin-bottom: 16px; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
         .info-row:last-child { border-bottom: none; }
         .info-label { color: #888; }
         .info-value { color: #333; word-break: break-all; text-align: right; max-width: 70%; }
         .back-link { display: inline-block; margin-top: 16px; color: #4facfe; text-decoration: none; font-size: 13px; }
-        .token-hint { font-size: 12px; color: #999; margin-top: -12px; margin-bottom: 16px; }
-        .target-display { color: #666; font-size: 14px; margin-bottom: 16px; }
-        .target-display strong { color: #333; }
+        .count-badge {
+            display: inline-block; padding: 2px 8px; background: #f0f0f0;
+            border-radius: 10px; font-size: 12px; color: #666; margin-left: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <h1>🔗 跳转链接管理</h1>
-            <p class="desc">生成新的随机链接，全部跳转到同一个目标地址</p>
-
-            <div class="target-display">
-                固定跳转目标：<strong id="targetDisplay">加载中...</strong>
-            </div>
+            <p class="desc">每次生成新链接，旧链接自动失效</p>
 
             <label>GitHub Token</label>
             <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-            <p class="token-hint">Token 只需输入一次，浏览器会记住</p>
+            <p class="token-hint">只需输入一次，浏览器会记住</p>
 
-            <button class="btn btn-success" id="generateBtn" onclick="generateLink()">✨ 生成新链接</button>
+            <button class="btn btn-primary" id="genBtn" onclick="generate()">✨ 生成新链接（旧链接自动作废）</button>
             <div class="status" id="status"></div>
 
-            <h2 style="margin-top:24px;">已生成的链接</h2>
-            <div class="link-list" id="linkList">
-                <div style="color:#999;font-size:13px;text-align:center;padding:20px;">暂无链接，点击上方生成</div>
+            <div class="link-box" id="linkBox">
+                <div class="label">✅ 新链接已生成（旧链接已失效）</div>
+                <div class="url" id="linkUrl" onclick="copy(this)"></div>
+                <p style="font-size:12px;color:#999;margin-top:8px;">点击链接复制 · 1-2分钟后生效</p>
             </div>
 
             <div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
-                <div class="info-row"><span class="info-label">仓库</span><span class="info-value">waqerqwrqwr/jump-link</span></div>
-                <div class="info-row"><span class="info-label">固定目标</span><span class="info-value" id="fixedTargetDisplay">-</span></div>
+                <div class="info-row"><span class="info-label">固定跳转目标</span><span class="info-value" id="targetDisplay">https://iosge.top/a/br/cde41b970e6604d9</span></div>
+                <div class="info-row"><span class="info-label">当前有效链接</span><span class="info-value" id="currentLink">-</span></div>
             </div>
         </div>
 
@@ -101,116 +92,134 @@
         const BASE = 'https://waqerqwrqwr.github.io/jump-link';
         const REPO = 'waqerqwrqwr/jump-link';
         const BRANCH = 'master';
-        const FIXED_TARGET = 'https://iosge.top/a/br/cde41b970e6604d9';
+        const TARGET = 'https://iosge.top/a/br/cde41b970e6604d9';
 
-        // 从 localStorage 读取
         const savedToken = localStorage.getItem('gh_token');
         if (savedToken) document.getElementById('token').value = savedToken;
 
-        document.getElementById('targetDisplay').textContent = FIXED_TARGET;
-        document.getElementById('fixedTargetDisplay').textContent = FIXED_TARGET;
+        // 加载当前有效链接
+        loadCurrent();
 
-        // 加载已有链接列表
-        loadLinks();
-
-        function generateId() {
-            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            let id = '';
-            for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
-            return id;
+        function randId() {
+            const c = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let r = '';
+            for (let i = 0; i < 8; i++) r += c[Math.floor(Math.random() * c.length)];
+            return r;
         }
 
-        async function generateLink() {
+        async function generate() {
             const token = document.getElementById('token').value.trim();
             if (!token) { showStatus('请先输入 GitHub Token', 'error'); return; }
             localStorage.setItem('gh_token', token);
 
-            const id = generateId();
+            const id = randId();
+            const newUrl = BASE + '/links/' + id + '/';
             const filePath = 'links/' + id + '/index.html';
-            const linkUrl = BASE + '/links/' + id;
-            showStatus('正在生成新链接...', 'loading');
+
+            showStatus('⏳ 正在清理旧链接 + 生成新链接...', 'loading');
+            setBtn(true);
 
             try {
-                // 创建 redirect HTML
-                const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>跳转中</title><script>window.location.href=' + JSON.stringify(FIXED_TARGET) + ';<\/script><\/head><body><\/body><\/html>';
-                const encoded = btoa(unescape(encodeURIComponent(html)));
-
-                const resp = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + filePath, {
-                    method: 'PUT',
-                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-                    body: JSON.stringify({
-                        message: 'generate link ' + id,
-                        content: encoded,
-                        branch: BRANCH
-                    })
+                // 1. 获取 links 目录下所有旧文件夹
+                const listResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links', {
+                    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
                 });
 
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    showStatus('生成失败: ' + (err.message || resp.status), 'error');
+                let oldDirs = [];
+                if (listResp.ok) {
+                    const items = await listResp.json();
+                    if (Array.isArray(items)) {
+                        oldDirs = items.filter(i => i.type === 'dir');
+                    }
+                }
+
+                // 2. 获取每个旧文件夹里 index.html 的 SHA，准备删除
+                let deleteQueue = [];
+                for (const dir of oldDirs) {
+                    try {
+                        const fileResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + dir.name + '/index.html', {
+                            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+                        });
+                        if (fileResp.ok) {
+                            const fileData = await fileResp.json();
+                            deleteQueue.push({
+                                path: 'links/' + dir.name + '/index.html',
+                                sha: fileData.sha
+                            });
+                        }
+                    } catch(e) {}
+                }
+
+                // 3. 逐个删除旧链接
+                for (const item of deleteQueue) {
+                    await fetch('https://api.github.com/repos/' + REPO + '/contents/' + item.path, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+                        body: JSON.stringify({ message: 'expire link ' + item.path.replace('links/','').replace('/index.html',''), sha: item.sha, branch: BRANCH })
+                    });
+                }
+
+                // 4. 创建新链接
+                const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>跳转中</title><script>window.location.href=' + JSON.stringify(TARGET) + ';<\/script><\/head><body><\/body><\/html>';
+                const encoded = btoa(unescape(encodeURIComponent(html)));
+
+                const createResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + filePath, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+                    body: JSON.stringify({ message: 'new link ' + id, content: encoded, branch: BRANCH })
+                });
+
+                if (!createResp.ok) {
+                    const err = await createResp.json();
+                    showStatus('生成失败: ' + (err.message || '未知错误'), 'error');
+                    setBtn(false);
                     return;
                 }
 
-                showStatus('✅ 新链接已生成！1-2分钟后生效', 'success');
-                addLinkToList(linkUrl);
+                // 5. 显示结果
+                showStatus('', '');
+                document.getElementById('linkBox').style.display = 'block';
+                document.getElementById('linkUrl').textContent = newUrl;
+                document.getElementById('currentLink').textContent = newUrl;
+                document.getElementById('genBtn').textContent = '✨ 下一条链接已就绪，点击生成';
 
             } catch(e) {
                 showStatus('出错了: ' + e.message, 'error');
             }
+            setBtn(false);
         }
 
-        async function loadLinks() {
+        async function loadCurrent() {
             try {
                 const token = document.getElementById('token').value.trim();
                 if (!token) return;
-
                 const resp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links', {
                     headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
                 });
                 if (!resp.ok) return;
                 const items = await resp.json();
                 if (!Array.isArray(items)) return;
-
-                const list = document.getElementById('linkList');
-                list.innerHTML = '';
-
-                for (const item of items) {
-                    if (item.type === 'dir') {
-                        const url = BASE + '/links/' + item.name;
-                        addLinkToList(url, true);
-                    }
+                const dirs = items.filter(i => i.type === 'dir');
+                if (dirs.length > 0) {
+                    const last = dirs[dirs.length - 1];
+                    document.getElementById('currentLink').textContent = BASE + '/links/' + last.name + '/';
                 }
-            } catch(e) {
-                // 静默失败，等用户输入token后手动生成
-            }
+            } catch(e) {}
         }
 
-        function addLinkToList(url, skipSave) {
-            const list = document.getElementById('linkList');
-            const empty = list.querySelector('[style*="暂无链接"]');
-            if (empty) empty.remove();
-
-            const div = document.createElement('div');
-            div.className = 'link-item';
-            div.innerHTML = '<span class="link-url">' + url + '</span><button class="copy-btn" onclick="copyLink(this,\'' + url + '\')">复制</button>';
-            list.insertBefore(div, list.firstChild);
-        }
-
-        function copyLink(btn, url) {
+        function copy(el) {
+            const url = el.textContent;
             navigator.clipboard.writeText(url).then(() => {
-                btn.textContent = '已复制';
-                setTimeout(() => { btn.textContent = '复制'; }, 1500);
+                el.style.background = '#e6f7ff';
+                setTimeout(() => el.style.background = '#fff', 1000);
             }).catch(() => {
-                // fallback
                 const ta = document.createElement('textarea');
                 ta.value = url; document.body.appendChild(ta);
-                ta.select(); document.execCommand('copy');
-                ta.remove();
-                btn.textContent = '已复制';
-                setTimeout(() => { btn.textContent = '复制'; }, 1500);
+                ta.select(); document.execCommand('copy'); ta.remove();
             });
         }
 
+        function setBtn(d) { document.getElementById('genBtn').disabled = d; }
         function showStatus(msg, type) {
             const el = document.getElementById('status');
             el.textContent = msg;
