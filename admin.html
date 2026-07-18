@@ -1,169 +1,177 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>跳转管理后台</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{min-height:100vh;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:40px 20px}
-        .container{max-width:700px;margin:0 auto}
-        .card{background:#fff;border-radius:12px;padding:32px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-        h1{font-size:24px;margin-bottom:8px}
-        .desc{color:#666;font-size:14px;margin-bottom:24px}
-        label{display:block;font-size:14px;font-weight:500;margin-bottom:6px;color:#333}
-        input{width:100%;padding:10px 14px;border:1px solid #d9d9d9;border-radius:8px;font-size:14px;outline:none;transition:border .2s;margin-bottom:16px;box-sizing:border-box}
-        input:focus{border-color:#4facfe}
-        .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;cursor:pointer;color:#fff;font-weight:500;transition:opacity .2s}
-        .btn:hover{opacity:.85}
-        .btn:disabled{opacity:.5;cursor:not-allowed}
-        .btn-primary{background:linear-gradient(135deg,#4facfe,#00f2fe)}
-        .status{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px;display:none}
-        .status.success{display:block;background:#f6ffed;border:1px solid #b7eb8f;color:#52c41a}
-        .status.error{display:block;background:#fff2f0;border:1px solid #ffccc7;color:#ff4d4f}
-        .status.info{display:block;background:#e6f7ff;border:1px solid #91d5ff;color:#1890ff}
-        .link-box{margin-top:20px;padding:20px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:8px;display:none}
-        .link-box .label{font-size:13px;color:#666;margin-bottom:8px}
-        .link-box .url{font-size:18px;color:#4facfe;word-break:break-all;padding:12px;background:#fff;border-radius:6px;border:1px solid #e8e8e8;cursor:pointer;font-family:monospace;text-align:center;font-weight:500}
-        .link-box .url:hover{background:#f0f8ff}
-        .link-box .hint{font-size:12px;color:#999;margin-top:8px;text-align:center}
-        .token-hint{font-size:12px;color:#999;margin-top:-12px;margin-bottom:16px}
-        .back-link{display:inline-block;margin-top:16px;color:#4facfe;text-decoration:none;font-size:13px}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跳转管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:40px 20px}
+.container{max-width:700px;margin:0 auto}
+.card{background:#fff;border-radius:12px;padding:32px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+h1{font-size:24px;margin-bottom:8px}
+.desc{color:#666;font-size:14px;margin-bottom:24px}
+label{display:block;font-size:14px;font-weight:500;margin-bottom:6px;color:#333}
+input{width:100%;padding:10px 14px;border:1px solid #d9d9d9;border-radius:8px;font-size:14px;outline:none;transition:border .2s;margin-bottom:16px;box-sizing:border-box}
+input:focus{border-color:#4facfe}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;cursor:pointer;color:#fff;font-weight:500;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.status{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px;display:none}
+.status.success{display:block;background:#f6ffed;border:1px solid #b7eb8f;color:#52c41a}
+.status.error{display:block;background:#fff2f0;border:1px solid #ffccc7;color:#ff4d4f}
+.status.info{display:block;background:#e6f7ff;border:1px solid #91d5ff;color:#1890ff}
+.link-box{margin-top:20px;padding:20px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:8px;display:none}
+.link-box .label{font-size:13px;color:#666;margin-bottom:8px}
+.link-box .url{font-size:18px;color:#4facfe;word-break:break-all;padding:12px;background:#fff;border-radius:6px;border:1px solid #e8e8e8;cursor:pointer;font-family:monospace;text-align:center;font-weight:500}
+.link-box .url:hover{background:#f0f8ff}
+.link-box .hint{font-size:12px;color:#999;margin-top:8px;text-align:center}
+.token-hint{font-size:12px;color:#999;margin-top:-12px;margin-bottom:16px}
+.back-link{display:inline-block;margin-top:16px;color:#4facfe;text-decoration:none;font-size:13px}
+</style>
 </head>
 <body>
 <div class="container">
-    <div class="card">
-        <h1>🔗 跳转链接管理</h1>
-        <p class="desc">点击生成 → 旧链接即时被覆盖 → 新链接 1-2 分钟后可用</p>
-
-        <label>GitHub Token</label>
-        <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-        <p class="token-hint">只需输入一次</p>
-
-        <button class="btn btn-primary" id="genBtn" onclick="generate()">✨ 生成新链接</button>
-        <div class="status" id="status"></div>
-
-        <div class="link-box" id="linkBox">
-            <div class="label">✅ 新链接已生成（旧链接已全部作废）</div>
-            <div class="url" id="linkUrl" onclick="copy(this)"></div>
-            <div class="hint">点击复制 · 1-2 分钟后可用</div>
-        </div>
-    </div>
-    <a class="back-link" href="index.html">← 返回跳转页</a>
+<div class="card">
+<h1>链接管理</h1>
+<p class="desc">生成新链接，旧链接自动作废</p>
+<label>GitHub Token</label>
+<input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+<p class="token-hint">只需输入一次</p>
+<button class="btn btn-primary" id="genBtn" onclick="generate()">生成新链接</button>
+<div class="status" id="status"></div>
+<div class="link-box" id="linkBox">
+<div class="label">新链接已生成（旧链接已作废）</div>
+<div class="url" id="linkUrl" onclick="copy(this)"></div>
+<div class="hint">点击复制 &middot; 1-2分钟后可用</div>
+</div>
+</div>
+<a class="back-link" href="index.html">返回跳转页</a>
 </div>
 
 <script>
-const REPO = 'waqerqwrqwr/jump-link';
-const BRANCH = 'master';
-const TARGET = 'https://iosge.top/a/br/cde41b970e6604d9';
-const BASE = 'https://waqerqwrqwr.github.io/jump-link';
-const EXPIRED_HTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>链接已过期</title><style>body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;font-family:sans-serif;text-align:center;padding:20px}h1{font-size:24px;margin-bottom:10px;opacity:.6}p{color:rgba(255,255,255,.3);font-size:14px}</style></head><body><div><h1>此链接已过期</h1><p>请向发布者索取最新链接</p></div></body></html>';
-const REDIRECT_HTML_BEFORE = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>跳转中</title><style>body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;font-family:sans-serif;text-align:center;padding:20px}.spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:#4facfe;border-radius:50%;animation:s .8s linear infinite;margin:0 auto 24px}@keyframes s{to{transform:rotate(360deg)}}h1{font-size:22px;font-weight:500}</style></head><body><div class="spinner"></div><h1>正在跳转...</h1><script>window.location.href="';
-const REDIRECT_HTML_AFTER = '";</script></body></html>';
+// 常量
+var REPO = 'waqerqwrqwr/jump-link';
+var BRANCH = 'master';
+var TARGET = 'https://iosge.top/a/br/cde41b970e6604d9';
+var BASE = 'https://waqerqwrqwr.github.io/jump-link';
 
-const saved = localStorage.getItem('gh_token');
+// 注意：不能直接用 </script>，要拆开
+var S1 = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>跳转中</title><style>body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;font-family:sans-serif;text-align:center;padding:20px}.spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:#4facfe;border-radius:50%;animation:s .8s linear infinite;margin:0 auto 24px}@keyframes s{to{transform:rotate(360deg)}}h1{font-size:22px;font-weight:500}</style></head><body><div class="spinner"></div><h1>正在跳转...</h1><' + 'script>window.location.href="';
+var S2 = '";<' + '/script></body></html>';
+
+var EXPIRED = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>链接已过期</title><style>body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;font-family:sans-serif;text-align:center;padding:20px}h1{font-size:24px;margin-bottom:10px;opacity:.6}p{color:rgba(255,255,255,.3);font-size:14px}</style></head><body><div><h1>此链接已过期</h1><p>请向发布者索取最新链接</p></div></body></html>';
+
+// 读取保存的 token
+var saved = localStorage.getItem('gh_token');
 if (saved) document.getElementById('token').value = saved;
 loadCurrent();
 
 function randId() {
-    const c = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let r = '';
-    for (let i = 0; i < 8; i++) r += c[Math.floor(Math.random() * c.length)];
-    return r;
+  var c = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var r = '';
+  for (var i = 0; i < 8; i++) r += c[Math.floor(Math.random() * c.length)];
+  return r;
+}
+
+function headers(t) {
+  return { 'Authorization': 'token ' + t, 'Accept': 'application/vnd.github.v3+json' };
+}
+
+function showStatus(msg, type) {
+  var el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function setBtn(d) {
+  document.getElementById('genBtn').disabled = d;
 }
 
 async function generate() {
-    const token = document.getElementById('token').value.trim();
-    if (!token) { showStatus('请先输入 GitHub Token', 'error'); return; }
-    localStorage.setItem('gh_token', token);
+  var token = document.getElementById('token').value.trim();
+  if (!token) { showStatus('请输入 GitHub Token', 'error'); return; }
+  localStorage.setItem('gh_token', token);
 
-    const id = randId();
-    const newUrl = BASE + '/links/' + id + '/';
-    const h = hdrs(token);
+  var id = randId();
+  var newUrl = BASE + '/links/' + id + '/';
+  var h = headers(token);
 
-    showStatus('⏳ 正在读取旧链接列表...', 'info');
-    setBtn(true);
+  showStatus('正在处理...', 'info');
+  setBtn(true);
 
-    try {
-        // 1. 获取所有旧子链接
-        const listResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links', { headers: h });
-        let oldItems = [];
-        if (listResp.ok) {
-            const list = await listResp.json();
-            if (Array.isArray(list)) oldItems = list.filter(i => i.type === 'dir');
-        }
-
-        // 2. 覆盖旧链接为过期页面
-        for (const item of oldItems) {
-            showStatus('⏳ 正在作废旧链接: ' + item.name, 'info');
-            const fileResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + item.name + '/index.html', { headers: h });
-            if (!fileResp.ok) continue;
-            const fileData = await fileResp.json();
-            const expB64 = btoa(unescape(encodeURIComponent(EXPIRED_HTML)));
-            await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + item.name + '/index.html', {
-                method: 'PUT',
-                headers: { ...h, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'expire ' + item.name, content: expB64, sha: fileData.sha, branch: BRANCH })
-            });
-        }
-
-        // 3. 更新 current.txt
-        showStatus('⏳ 正在更新当前链接标识...', 'info');
-        const curResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/current.txt', { headers: h });
-        const curData = await curResp.json();
-        const b64id = btoa(unescape(encodeURIComponent(id)));
-        await fetch('https://api.github.com/repos/' + REPO + '/contents/current.txt', {
-            method: 'PUT',
-            headers: { ...h, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'activate ' + id, content: b64id, sha: curData.sha, branch: BRANCH })
-        });
-
-        // 4. 创建新链接（纯跳转页面，无需任何外部请求）
-        showStatus('⏳ 正在创建新链接页面...', 'info');
-        const newHtml = REDIRECT_HTML_BEFORE + TARGET + REDIRECT_HTML_AFTER;
-        const newB64 = btoa(unescape(encodeURIComponent(newHtml)));
-        await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + id + '/index.html', {
-            method: 'PUT',
-            headers: { ...h, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'create ' + id, content: newB64, branch: BRANCH })
-        });
-
-        // 5. 完成
-        const expiredCount = oldItems.length;
-        showStatus('', '');
-        document.getElementById('linkBox').style.display = 'block';
-        document.getElementById('linkUrl').textContent = newUrl;
-        document.getElementById('genBtn').textContent = '✨ 再生成一个（已作废 ' + expiredCount + ' 个旧链接）';
-
-    } catch(e) {
-        showStatus('出错了: ' + e.message, 'error');
+  try {
+    // 1. 获取旧链接列表
+    var listResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links', { headers: h });
+    var oldItems = [];
+    if (listResp.ok) {
+      var list = await listResp.json();
+      if (Array.isArray(list)) oldItems = list.filter(function(i) { return i.type === 'dir'; });
     }
-    setBtn(false);
+
+    // 2. 覆盖旧链接为过期页面
+    for (var i = 0; i < oldItems.length; i++) {
+      showStatus('正在作废旧链接: ' + oldItems[i].name, 'info');
+      var fileResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + oldItems[i].name + '/index.html', { headers: h });
+      if (!fileResp.ok) continue;
+      var fileData = await fileResp.json();
+      var expB64 = btoa(unescape(encodeURIComponent(EXPIRED)));
+      await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + oldItems[i].name + '/index.html', {
+        method: 'PUT',
+        headers: Object.assign({}, h, { 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ message: 'expire ' + oldItems[i].name, content: expB64, sha: fileData.sha, branch: BRANCH })
+      });
+    }
+
+    // 3. 创建新链接
+    showStatus('正在创建新链接...', 'info');
+    var newHtml = S1 + TARGET + S2;
+    var newB64 = btoa(unescape(encodeURIComponent(newHtml)));
+    await fetch('https://api.github.com/repos/' + REPO + '/contents/links/' + id + '/index.html', {
+      method: 'PUT',
+      headers: Object.assign({}, h, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ message: 'create ' + id, content: newB64, branch: BRANCH })
+    });
+
+    // 4. 完成
+    showStatus('', '');
+    document.getElementById('linkBox').style.display = 'block';
+    document.getElementById('linkUrl').textContent = newUrl;
+    document.getElementById('genBtn').textContent = '再生成一个（已作废 ' + oldItems.length + ' 个旧链接）';
+
+  } catch(e) {
+    showStatus('出错了: ' + e.message, 'error');
+  }
+  setBtn(false);
 }
 
 async function loadCurrent() {
-    try {
-        const t = document.getElementById('token').value.trim();
-        if (!t) return;
-        const r = await fetch('https://api.github.com/repos/' + REPO + '/contents/current.txt', { headers: hdrs(t) });
-        if (!r.ok) return;
-        const d = await r.json();
-        const id = atob(d.content.replace(/\n/g, ''));
-        if (id && id !== 'main') document.getElementById('genBtn').textContent = '✨ 生成新链接（当前有有效链接）';
-    } catch(e) {}
+  try {
+    var t = document.getElementById('token').value.trim();
+    if (!t) return;
+    var r = await fetch('https://api.github.com/repos/' + REPO + '/contents/current.txt', { headers: headers(t) });
+    if (!r.ok) return;
+    var d = await r.json();
+    var id = atob(d.content.replace(/\n/g, ''));
+    if (id && id !== 'main') document.getElementById('genBtn').textContent = '生成新链接（当前有有效链接）';
+  } catch(e) {}
 }
 
 function copy(el) {
-    const u = el.textContent;
-    navigator.clipboard.writeText(u).then(() => { el.style.background='#e6f7ff'; setTimeout(()=>el.style.background='#fff',1000); }).catch(() => {
-        const ta = document.createElement('textarea'); ta.value = u; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-    });
+  var u = el.textContent;
+  navigator.clipboard.writeText(u).then(function() {
+    el.style.background = '#e6f7ff';
+    setTimeout(function() { el.style.background = '#fff'; }, 1000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = u;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  });
 }
-
-function hdrs(t) { return { 'Authorization': 'token ' + t, 'Accept': 'application/vnd.github.v3+json' }; }
-function setBtn(d) { document.getElementById('genBtn').disabled = d; }
-function showStatus(m, t) { const el = document.getElementById('status'); el.textContent = m; el.className = 'status ' + t; }
 </script>
 </body>
 </html>
