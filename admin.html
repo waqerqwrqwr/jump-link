@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跳转管理后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card {
+            background: #fff; border-radius: 12px;
+            padding: 32px; margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        .desc { color: #666; font-size: 14px; margin-bottom: 24px; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #333; }
+        input, textarea {
+            width: 100%; padding: 10px 14px; border: 1px solid #d9d9d9;
+            border-radius: 8px; font-size: 14px; outline: none;
+            transition: border .2s; margin-bottom: 16px;
+        }
+        input:focus, textarea:focus { border-color: #4facfe; }
+        textarea { min-height: 60px; resize: vertical; font-family: monospace; }
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-size: 15px; cursor: pointer; color: #fff; font-weight: 500;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            transition: opacity .2s;
+        }
+        .btn:hover { opacity: .85; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .status {
+            margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+            font-size: 13px; display: none;
+        }
+        .status.success { display: block; background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
+        .status.error { display: block; background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; }
+        .status.loading { display: block; background: #e6f7ff; border: 1px solid #91d5ff; color: #1890ff; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #888; }
+        .info-value { color: #333; word-break: break-all; text-align: right; max-width: 70%; }
+        .back-link { display: inline-block; margin-top: 16px; color: #4facfe; text-decoration: none; font-size: 13px; }
+        .token-hint { font-size: 12px; color: #999; margin-top: -12px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>⚙ 跳转管理</h1>
+            <p class="desc">修改 redirect URL，保存后自动更新跳转目标</p>
+
+            <label>当前跳转目标</label>
+            <textarea id="currentUrl" readonly></textarea>
+
+            <label>新的跳转目标</label>
+            <input type="url" id="newUrl" placeholder="https://example.com/new-link">
+            
+            <label>GitHub Token</label>
+            <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <p class="token-hint">Token 只需输入一次，存本地浏览器</p>
+
+            <button class="btn" id="saveBtn" onclick="save()">💾 保存并更新</button>
+            <div class="status" id="status"></div>
+
+            <div style="margin-top: 20px;">
+                <div class="info-row"><span class="info-label">仓库</span><span class="info-value">waqerqwrqwr/jump-link</span></div>
+                <div class="info-row"><span class="info-label">分支</span><span class="info-value">master</span></div>
+                <div class="info-row"><span class="info-label">公共链接</span><span class="info-value">waqerqwrqwr.github.io/jump-link</span></div>
+            </div>
+        </div>
+
+        <a class="back-link" href="index.html">← 返回跳转页</a>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // 显示当前 URL
+        document.getElementById('currentUrl').value = typeof TARGET_URL !== 'undefined' ? TARGET_URL : '未配置';
+
+        // 读取本地存储的 token
+        const savedToken = localStorage.getItem('gh_token');
+        if (savedToken) document.getElementById('token').value = savedToken;
+
+        async function save() {
+            const newUrl = document.getElementById('newUrl').value.trim();
+            const token = document.getElementById('token').value.trim();
+            const status = document.getElementById('status');
+
+            if (!newUrl) { showStatus('请输入新的跳转链接', 'error'); return; }
+            if (!token) { showStatus('请输入 GitHub Token', 'error'); return; }
+
+            // 保存 token
+            localStorage.setItem('gh_token', token);
+
+            showStatus('正在更新...', 'loading');
+
+            try {
+                // 1. 获取最新 config.js 的 SHA
+                const metaResp = await fetch('https://api.github.com/repos/waqerqwrqwr/jump-link/contents/config.js', {
+                    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+                });
+                if (!metaResp.ok) { showStatus('Token 无效或权限不足', 'error'); return; }
+                const meta = await metaResp.json();
+                const sha = meta.sha;
+
+                // 2. 更新 config.js
+                const newContent = '// 当前跳转目标 - 修改这个值即可\nconst TARGET_URL = ' + JSON.stringify(newUrl) + ';\n';
+                const encoded = btoa(unescape(encodeURIComponent(newContent)));
+
+                const updateResp = await fetch('https://api.github.com/repos/waqerqwrqwr/jump-link/contents/config.js', {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+                    body: JSON.stringify({ message: 'update redirect url', content: encoded, sha: sha })
+                });
+
+                if (!updateResp.ok) { showStatus('更新失败: ' + (await updateResp.text()), 'error'); return; }
+
+                showStatus('✅ 更新成功！链接将在 1-2 分钟后生效', 'success');
+                document.getElementById('currentUrl').value = newUrl;
+
+            } catch(e) {
+                showStatus('出错了: ' + e.message, 'error');
+            }
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.className = 'status ' + type;
+        }
+    </script>
+</body>
+</html>
