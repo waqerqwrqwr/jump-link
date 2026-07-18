@@ -160,17 +160,19 @@
                     }
                 }
 
-                // 3. 逐个删除旧链接
+                // 3. 将旧链接改为"已过期"页面（用 PUT 替代 DELETE 避免跨域问题）
                 for (const item of deleteQueue) {
-                    showStatus('正在删除旧链接: ' + item.name + '...', 'loading');
-                    const delResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + item.path, {
-                        method: 'DELETE',
+                    showStatus('正在作废旧链接: ' + item.name + '...', 'loading');
+                    const expiredHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>链接已过期</title><style>body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:#1a1a2e;color:#fff;font-family:sans-serif;text-align:center;padding:20px;}h1{font-size:24px;margin-bottom:10px;opacity:0.6;}p{color:rgba(255,255,255,0.3);font-size:14px;}</style></head><body><div><h1>🔗 此链接已过期</h1><p>请向发布者索取最新链接</p></div></body></html>';
+                    const expB64 = btoa(unescape(encodeURIComponent(expiredHtml)));
+                    const expResp = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + item.path, {
+                        method: 'PUT',
                         headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-                        body: JSON.stringify({ message: 'expire ' + item.name, sha: item.sha, branch: BRANCH })
+                        body: JSON.stringify({ message: 'expire ' + item.name, content: expB64, sha: item.sha, branch: BRANCH })
                     });
-                    if (!delResp.ok) {
-                        const errText = await delResp.text();
-                        showStatus('删除 ' + item.name + ' 失败: HTTP ' + delResp.status + ' ' + errText.substring(0,100), 'error');
+                    if (!expResp.ok) {
+                        const errText = await expResp.text();
+                        showStatus('作废 ' + item.name + ' 失败: HTTP ' + expResp.status + ' ' + errText.substring(0,100), 'error');
                         setBtn(false); return;
                     }
                 }
